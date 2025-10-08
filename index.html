@@ -4,7 +4,62 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>آراء العملاء</title>
-  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      direction: rtl;
+      background: #f3f6fa;
+      padding: 20px;
+      margin: 0;
+      text-align: center; /* يجعل كل النصوص في المنتصف */
+    }
+    header h1, section h2 {
+      color: #1E3A8A;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 500px; /* أصغر عرض للفورم */
+      margin: 20px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+    }
+    input, textarea {
+      width: 80%; /* أصغر عرض للحقل */
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 15px;
+      box-sizing: border-box;
+      text-align: center; /* النص داخل الحقول في المنتصف */
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    button[type="submit"] {
+      background: #1E3A8A;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #formMessage {
+      margin-top: 10px;
+      color: green;
+      font-size: 14px;
+    }
+    .reviews {
+      max-width: 500px;
+      margin: 0 auto 20px;
+      text-align: right; /* التعليقات تبقى منسقة على اليمين */
+    }
+  </style>
 </head>
 <body>
   <header>
