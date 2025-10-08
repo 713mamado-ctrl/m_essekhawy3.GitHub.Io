@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>آراء العملاء</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header>
+    <h1>آراء العملاء</h1>
+  </header>
+
+  <main>
+    <section class="reviews"></section>
+
+    <section class="add-review">
+      <h2>أضف رأيك</h2>
+      <form id="reviewForm">
+        <input type="text" id="name" placeholder="اكتب اسمك" required>
+        <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+        <textarea id="comment" placeholder="اكتب تعليقك هنا" required></textarea>
+        <button type="submit">إرسال</button>
+        <div id="formMessage" role="status" aria-live="polite"></div>
+      </form>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="assets/script.js"></script>
+</body>
+</html>
