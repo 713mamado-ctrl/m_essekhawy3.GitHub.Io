@@ -11,7 +11,7 @@
       background: #f3f6fa;
       padding: 20px;
       margin: 0;
-      text-align: center; /* يجعل كل النصوص في المنتصف */
+      text-align: center;
     }
     header h1, section h2 {
       color: #1E3A8A;
@@ -21,7 +21,7 @@
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      max-width: 500px; /* أصغر عرض للفورم */
+      max-width: 600px; /* أكبر شوي */
       margin: 20px auto;
       padding: 20px;
       background: #fff;
@@ -29,16 +29,16 @@
       box-shadow: 0 3px 8px rgba(0,0,0,0.06);
     }
     input, textarea {
-      width: 80%; /* أصغر عرض للحقل */
+      width: 90%; /* أكبر من قبل */
       padding: 10px;
       border-radius: 8px;
       border: 1px solid #ccc;
       font-size: 15px;
       box-sizing: border-box;
-      text-align: center; /* النص داخل الحقول في المنتصف */
+      text-align: center;
     }
     textarea {
-      min-height: 80px;
+      min-height: 100px;
       resize: vertical;
     }
     button[type="submit"] {
@@ -55,9 +55,38 @@
       font-size: 14px;
     }
     .reviews {
-      max-width: 500px;
+      max-width: 600px;
       margin: 0 auto 20px;
-      text-align: right; /* التعليقات تبقى منسقة على اليمين */
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .review-box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+      text-align: right;
+      position: relative;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .review-text {
+      flex: 1;
+      text-align: right;
+    }
+    .review-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      background: #efefef;
+      border: none;
+      padding: 6px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -67,7 +96,7 @@
   </header>
 
   <main>
-    <section class="reviews"></section>
+    <section class="reviews" id="reviewsContainer"></section>
 
     <section class="add-review">
       <h2>أضف رأيك</h2>
@@ -83,6 +112,121 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="assets/script.js"></script>
+  <script>
+    // ضع هنا إعدادات Firebase الخاصة بك
+    const firebaseConfig = {
+      apiKey: "PUT_YOUR_apiKey",
+      authDomain: "PUT_YOUR_authDomain",
+      databaseURL: "PUT_YOUR_databaseURL",
+      projectId: "PUT_YOUR_projectId",
+      storageBucket: "PUT_YOUR_storageBucket",
+      messagingSenderId: "PUT_YOUR_messagingSenderId",
+      appId: "PUT_YOUR_appId"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const dbRef = firebase.database().ref('reviews');
+
+    const reviewsContainer = document.getElementById('reviewsContainer');
+    const form = document.getElementById('reviewForm');
+    const formMessage = document.getElementById('formMessage');
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>\"'`=\\/]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;','/':'&#x2F;','`':'&#x60;','=':'&#x3D;'})[s]);
+    }
+
+    function makeReviewElement(id, name, comment){
+      const div = document.createElement('div');
+      div.className = 'review-box';
+      div.setAttribute('data-id', id);
+
+      const textDiv = document.createElement('div');
+      textDiv.className = 'review-text';
+      textDiv.innerHTML = `<strong>${escapeHtml(name)}</strong>: ${escapeHtml(comment)}`;
+
+      const btnDiv = document.createElement('div');
+      btnDiv.className = 'review-buttons';
+
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn';
+      editBtn.textContent = '✏️';
+      editBtn.title = 'تعديل';
+      editBtn.onclick = () => editComment(id);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn';
+      delBtn.textContent = '🗑️';
+      delBtn.title = 'حذف';
+      delBtn.onclick = () => deleteComment(id);
+
+      btnDiv.appendChild(editBtn);
+      btnDiv.appendChild(delBtn);
+
+      div.appendChild(textDiv);
+      div.appendChild(btnDiv);
+
+      return div;
+    }
+
+    function displayReview(id, name, comment){
+      const existing = document.querySelector(`.review-box[data-id="${id}"]`);
+      if(existing) existing.remove();
+      const el = makeReviewElement(id, name, comment);
+      reviewsContainer.prepend(el);
+    }
+
+    dbRef.on('child_added', snap => {
+      const v = snap.val();
+      if(document.querySelector(`.review-box[data-id="${snap.key}"]`)) return;
+      displayReview(snap.key, v.name, v.comment);
+    });
+
+    dbRef.on('child_changed', snap => {
+      const v = snap.val();
+      displayReview(snap.key, v.name, v.comment);
+    });
+
+    dbRef.on('child_removed', snap => {
+      const el = document.querySelector(`.review-box[data-id="${snap.key}"]`);
+      if(el) el.remove();
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      formMessage.textContent = '';
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const comment = document.getElementById('comment').value.trim();
+      if(!name || !email || !comment) { formMessage.textContent = 'املأ كل الحقول.'; return; }
+
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if(!emailPattern.test(email)){ formMessage.textContent = 'بريد إلكتروني غير صحيح.'; return; }
+
+      try {
+        const tempRef = dbRef.push();
+        displayReview(tempRef.key, name, comment);
+        await tempRef.set({ name, email, comment, createdAt: Date.now() });
+        form.reset();
+        formMessage.textContent = 'تم إرسال رأيك بنجاح!';
+      } catch (err) {
+        console.error('Save error', err);
+        formMessage.textContent = 'حدث خطأ أثناء الإرسال.';
+      }
+    });
+
+    function deleteComment(id){
+      if(confirm('هل تريد حذف هذا الرأي؟')) dbRef.child(id).remove();
+    }
+
+    function editComment(id){
+      const el = document.querySelector(`.review-box[data-id="${id}"]`);
+      if(!el) return alert('العنصر غير موجود.');
+      const oldText = el.querySelector('.review-text').textContent;
+      const updated = prompt('عدل تعليقك:', oldText);
+      if(updated === null) return;
+      const trimmed = updated.trim();
+      if(trimmed === '') return alert('التعليق لا يمكن أن يكون فارغاً.');
+      dbRef.child(id).update({ comment: trimmed, editedAt: Date.now() });
+    }
+  </script>
 </body>
 </html>
